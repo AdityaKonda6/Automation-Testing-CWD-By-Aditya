@@ -1,0 +1,315 @@
+Okay, here are simple, step-by-step instructions for setting up PostgreSQL and pgAdmin 4 on Ubuntu 22.04 (Jammy), and a brief overview of how to start with security testing. This is formatted to be suitable for a document.
+
+Setting up PostgreSQL 16 and pgAdmin 4 on Ubuntu 22.04 LTS (Jammy)
+
+This document outlines the process to install PostgreSQL, a powerful open-source relational database, and pgAdmin 4, a popular graphical administration tool for PostgreSQL, on Ubuntu 22.04 LTS (Jammy Jellyfish).
+
+Prerequisites
+
+    A running Ubuntu 22.04 LTS system.
+
+    sudo privileges on the system.
+
+    An active internet connection.
+
+Step 1: Install PostgreSQL 16
+
+We will add the official PostgreSQL APT repository to ensure we get the latest stable version and updates.
+
+    Import the PostgreSQL GPG Key:
+    This command downloads and adds the necessary key to verify the authenticity of PostgreSQL packages.
+    Bash
+
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+Add the PostgreSQL APT Repository:
+This command creates a new repository file for PostgreSQL, referencing the GPG key and automatically detecting your Ubuntu version (jammy).
+Bash
+
+. /etc/os-release # Loads OS release variables
+sudo sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+
+Update Package Lists:
+Refresh your system's package list to include the newly added PostgreSQL packages.
+Bash
+
+sudo apt update
+
+Install PostgreSQL 16 and Client Tools:
+Install the PostgreSQL server and its command-line client utilities.
+Bash
+
+    sudo apt install postgresql-16 postgresql-client-16 -y
+
+Step 2: Basic PostgreSQL Configuration and User Setup
+
+PostgreSQL is installed and automatically starts. Now, let's create a dedicated database user and set up password authentication.
+
+    Switch to the postgres System User:
+    The postgres user is the default administrative user for PostgreSQL.
+    Bash
+
+sudo -i -u postgres
+
+Create a New PostgreSQL User (e.g., adityasecuritytesting):
+This creates a new database role (user) with a password and grants it superuser privileges. For production, avoid superuser privileges for application users.
+Bash
+
+createuser --interactive --pwprompt adityasecuritytesting
+
+    Enter your desired password when prompted.
+
+    When asked "Shall the new role be a superuser?", type y for yes.
+
+Create a New Database (e.g., mydatabase):
+This creates a new database owned by the user you just created.
+Bash
+
+createdb mydatabase -O adityasecuritytesting
+
+Exit the postgres User Session:
+Return to your regular user account.
+Bash
+
+exit
+
+Configure PostgreSQL for Password Authentication:
+By default, PostgreSQL uses "peer authentication" for local connections, which means the database user must match the system user. We'll change this to password authentication for flexibility.
+
+Edit the client authentication configuration file:
+Bash
+
+sudo nano /etc/postgresql/16/main/pg_hba.conf
+
+Find the line:
+
+local   all             all                                     peer
+
+Change it to:
+
+local   all             all                                     scram-sha-256
+
+Save the file (Ctrl+X, then Y, then Enter).
+
+Restart PostgreSQL Service:
+Apply the changes to the authentication configuration.
+Bash
+
+sudo systemctl restart postgresql
+
+Test Connection to PostgreSQL:
+Connect to your new database using the new user and its password.
+Bash
+
+    psql -U adityasecuritytesting -d mydatabase
+
+    Enter the password you set. You should see the mydatabase=# prompt, indicating a successful connection. Type \q and press Enter to exit.
+
+Step 3: Install pgAdmin 4 (Graphical User Interface for PostgreSQL)
+
+pgAdmin 4 provides a web-based interface for managing your PostgreSQL databases.
+
+    Import the pgAdmin 4 GPG Key:
+    This key ensures the authenticity of pgAdmin 4 packages.
+    Bash
+
+sudo curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor -o /usr/share/keyrings/pgadmin-archive-keyring.gpg
+
+Add the pgAdmin 4 APT Repository:
+This adds the pgAdmin 4 repository to your system's sources.
+Bash
+
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/pgadmin-archive-keyring.gpg] https://ftp.postgresql.org/pub/pgadmin/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list'
+
+Update Package Lists Again:
+Refresh apt to discover the new pgAdmin 4 packages.
+Bash
+
+sudo apt update
+
+Install pgAdmin 4 (Web Mode):
+This installs the web-based version of pgAdmin 4.
+Bash
+
+sudo apt install pgadmin4 -y
+
+Configure pgAdmin 4 Web Server:
+Set up the initial administrator account for the pgAdmin web interface.
+Bash
+
+    sudo /usr/pgadmin4/bin/setup-web.sh
+
+        You will be prompted to enter an email address (your username for pgAdmin) and a password.
+
+Step 4: Access pgAdmin 4 and Connect to PostgreSQL
+
+    Open pgAdmin 4 in your Web Browser:
+    Navigate to the following URL:
+    http://127.0.0.1/pgadmin4
+    Log in using the email and password you set in the previous step.
+
+    Add Your PostgreSQL Server:
+
+        In the pgAdmin 4 interface, right-click on "Servers" in the left pane and select "Create" -> "Server...".
+
+        General Tab:
+
+            Name: My Local PostgreSQL 16 (or any descriptive name)
+
+        Connection Tab:
+
+            Host name/address: localhost
+
+            Port: 5432
+
+            Maintenance database: postgres
+
+            Username: adityasecuritytesting
+
+            Password: Enter the password you set for adityasecuritytesting.
+
+        Click "Save".
+
+You should now see your PostgreSQL server listed in pgAdmin 4, allowing you to visually manage your databases, tables, and run SQL queries.
+
+Starting with Website Security Testing (Overview)
+
+This section provides a high-level guide on how to approach security testing for your website, including the use of SonarQube.
+
+1. Dynamic Application Security Testing (DAST) with OWASP ZAP
+
+OWASP ZAP (Zed Attack Proxy) helps find vulnerabilities in your running website by actively attacking it.
+
+    Install OWASP ZAP:
+    Bash
+
+    sudo apt install zaproxy -y
+
+    Launch ZAP: Search for "OWASP ZAP" in your applications menu or run zaproxy from the terminal.
+
+    Automated Scan:
+
+        In ZAP, go to the "Quick Start" tab.
+
+        Enter your website's URL in the "Automated Scan" section.
+
+        Click "Attack" to begin.
+
+    Review Results: After the scan, check the "Alerts" tab for reported vulnerabilities like SQL Injection, Cross-Site Scripting (XSS), etc.
+
+2. Static Application Security Testing (SAST) with SonarQube
+
+SonarQube analyzes your website's source code to find bugs, code smells, and security vulnerabilities without running the application.
+
+    Install Java Development Kit (JDK): SonarQube requires Java. Install OpenJDK 17.
+    Bash
+
+sudo apt install openjdk-17-jdk -y
+
+Create SonarQube Database:
+You need a dedicated database for SonarQube in PostgreSQL.
+
+    Switch to postgres user: sudo -i -u postgres
+
+    Create user: createuser sonarqube (set a password when prompted)
+
+    Set password: psql -c "ALTER USER sonarqube WITH ENCRYPTED PASSWORD 'your_sonarqube_password';"
+
+    Create database: createdb sonarqube -O sonarqube
+
+    Grant permissions: psql -c "GRANT ALL PRIVILEGES ON DATABASE sonarqube TO sonarqube;"
+
+    Exit postgres user: exit
+
+Download SonarQube:
+Download the Community Edition from the official website: https://www.sonarqube.org/downloads/
+Bash
+
+# Example (adjust version as needed)
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.0.89995.zip
+sudo apt install unzip -y
+sudo unzip sonarqube-10.5.0.89995.zip -d /opt/
+sudo mv /opt/sonarqube-10.5.0.89995 /opt/sonarqube
+
+Create SonarQube System User:
+Bash
+
+sudo adduser --system --no-create-home --group sonarqube
+sudo chown -R sonarqube:sonarqube /opt/sonarqube
+
+Configure SonarQube to use PostgreSQL:
+Edit sonar.properties and add your database details:
+Bash
+
+sudo nano /opt/sonarqube/conf/sonar.properties
+
+Uncomment and set:
+Properties
+
+sonar.jdbc.url=jdbc:postgresql://localhost/sonarqube
+sonar.jdbc.username=sonarqube
+sonar.jdbc.password=your_sonarqube_password
+
+Save and exit.
+
+Start SonarQube (as a service):
+Create a systemd service file:
+Bash
+
+sudo nano /etc/systemd/system/sonarqube.service
+
+Paste the following content:
+Ini, TOML
+
+[Unit]
+Description=SonarQube service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+User=sonarqube
+Group=sonarqube
+Restart=always
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
+
+Save and exit. Then, reload systemd, enable, and start the service:
+Bash
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable sonarqube
+    sudo systemctl start sonarqube
+    sudo systemctl status sonarqube
+
+    Access SonarQube UI:
+    Open your browser and go to http://localhost:9000. Default login is admin/admin (you will be prompted to change it).
+
+    Analyze Your Project:
+
+        In the SonarQube UI, create a new project. Follow the on-screen instructions to get the sonar-scanner command and a project token.
+
+        Download and install sonar-scanner CLI (if not already done via package manager).
+
+        Navigate to your website's source code directory and run the sonar-scanner command provided by SonarQube.
+
+        Review analysis results in the SonarQube UI.
+
+3. Dependency Scanning with OWASP Dependency-Check
+
+This tool identifies known vulnerabilities in third-party libraries used by your website.
+
+    Download OWASP Dependency-Check:
+    Get the latest CLI from: https://jeremylong.github.io/DependencyCheck/
+
+    Run Scan:
+    Unzip the downloaded file. Navigate to your website's source code directory and run the scan:
+    Bash
+
+/path/to/dependency-check/bin/dependency-check.sh --project "MyWebsite" --scan . --format HTML --out ./security-reports/
+
+Review the generated HTML report for vulnerabilities.
