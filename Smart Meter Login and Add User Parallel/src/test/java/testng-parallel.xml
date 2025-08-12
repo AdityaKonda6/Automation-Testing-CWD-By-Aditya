@@ -1,0 +1,15 @@
+<!-- testng-parallel.xml -->
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="ParallelSuite" parallel="classes" thread-count="2">
+    <test name="Login Test">
+        <classes>
+            <class name="tests.LoginTest" />
+            <!-- <class name="tests.AddUserTest" /> -->
+        </classes>
+    </test>
+    <test name="Add User Test">
+        <classes>
+            <class name="tests.AddUserTest" />
+        </classes>
+    </test>
+</suite>
