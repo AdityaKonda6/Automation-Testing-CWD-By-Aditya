@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2025-07-14T18:33:31 IST" name="Surefire suite" finished-at="2025-07-14T18:36:22 IST" duration-ms="171110">
+    <groups>
+    </groups>
+    <test started-at="2025-07-14T18:33:31 IST" name="Surefire test" finished-at="2025-07-14T18:36:22 IST" duration-ms="171110">
+      <class name="tests.SendDeviceMessageTest">
+        <test-method is-config="true" signature="setup()[pri:0, instance:tests.SendDeviceMessageTest@4c15e7fd]" started-at="2025-07-14T18:33:31 IST" name="setup" finished-at="2025-07-14T18:33:32 IST" duration-ms="1417" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method signature="sendMessageToDevices()[pri:0, instance:tests.SendDeviceMessageTest@4c15e7fd]" started-at="2025-07-14T18:33:32 IST" name="sendMessageToDevices" finished-at="2025-07-14T18:36:21 IST" duration-ms="169527" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- sendMessageToDevices -->
+        <test-method is-config="true" signature="tearDown()[pri:0, instance:tests.SendDeviceMessageTest@4c15e7fd]" started-at="2025-07-14T18:36:21 IST" name="tearDown" finished-at="2025-07-14T18:36:22 IST" duration-ms="132" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDown -->
+      </class> <!-- tests.SendDeviceMessageTest -->
+    </test> <!-- Surefire test -->
+  </suite> <!-- Surefire suite -->
+</testng-results>
