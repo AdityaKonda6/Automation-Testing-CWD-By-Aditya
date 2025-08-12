@@ -1,0 +1,4 @@
+
+mvn clean test -DsuiteXmlFile=testng-parallel.xml
+mvn clean test -Dtest=AddUserTest
+mvn clean test -Dtest=LoginTest
