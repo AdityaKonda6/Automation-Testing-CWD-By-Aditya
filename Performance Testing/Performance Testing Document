@@ -1,0 +1,203 @@
+Absolutely! Here's your **complete step-by-step guide** from scratch — perfect for documentation, demos, or handoff to teammates. This will walk through **JMeter setup, login simulation, performance testing, and HTML report generation** on your Linux machine.
+
+---
+
+# 📘 **Performance Testing Documentation with Apache JMeter (Linux)**
+
+**Target URL**: [https://dashboard.sm.test.cwdin.com](https://dashboard.sm.test.cwdin.com)
+**Test Goal**: Load test login + device page under high user traffic and generate a clean HTML performance report.
+
+---
+
+## ✅ Prerequisites
+
+### 1. **Install Java**
+
+```bash
+sudo apt update
+sudo apt install openjdk-21-jdk -y
+```
+
+Check version:
+
+```bash
+java -version
+```
+
+---
+
+### 2. **Download and Setup Apache JMeter**
+
+```bash
+cd /opt
+sudo wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
+sudo tar -xvzf apache-jmeter-5.6.3.tgz
+sudo mv apache-jmeter-5.6.3 jmeter
+```
+
+Add to PATH (optional):
+
+```bash
+echo 'export PATH=$PATH:/opt/jmeter/bin' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Test:
+
+```bash
+jmeter -v
+```
+
+---
+
+## ✅ Create and Save Test Plan (`performance_test_plan.jmx`)
+
+### 1. Open JMeter GUI:
+
+```bash
+jmeter
+```
+
+### 2. Build the Test Plan:
+
+#### a. Add Thread Group:
+
+* Threads: `500`
+* Ramp-up: `60`
+* Loop Count: `1`
+
+#### b. Add HTTP Request → for **Login**:
+
+* Method: `POST`
+* Protocol: `https`
+* Server: `web.sm.test.cwdin.com`
+* Path: `/api/v1/user/auth/login`
+* Body Data:
+
+  ```json
+  {
+    "username": "your_username",
+    "password": "your_password"
+  }
+  ```
+
+#### c. Add HTTP Header Manager (under Login):
+
+* `Content-Type: application/json`
+* `Accept: application/json`
+
+#### d. Add Cookie Manager (under Thread Group)
+
+#### e. Add HTTP Request → for **Open Devices Page**:
+
+* Method: `GET`
+* Protocol: `https`
+* Server: `dashboard.sm.test.cwdin.com`
+* Path: `/home/entity-management/devices`
+
+#### f. (Optional) Add Assertions:
+
+* Response Assertion: contains `Devices` or check status = 200
+
+#### g. Add Listeners (optional for GUI testing):
+
+* Aggregate Report
+* Graph Results
+* View Results Tree *(for debugging only)*
+
+#### h. Save your plan:
+
+```bash
+/home/cwd/Downloads/Performancss/performance_test_plan.jmx
+```
+
+---
+
+## ✅ Run Test and Generate HTML Report
+
+### Step 1: Create results folder
+
+```bash
+mkdir -p /home/cwd/jmeter_results/html_report
+```
+
+---
+
+### Step 2: Run test in **Non-GUI (headless) mode**
+
+```bash
+/opt/jmeter/bin/jmeter \
+  -n \
+  -t /home/cwd/Downloads/Performancss/performance_test_plan.jmx \
+  -l /home/cwd/jmeter_results/result.jtl \
+  -e \
+  -o /home/cwd/jmeter_results/html_report
+```
+
+---
+
+### Step 3: Open the HTML Report
+
+```bash
+xdg-open /home/cwd/jmeter_results/html_report/index.html
+```
+
+---
+
+## 📊 What You’ll See in Report
+
+* **Summary Dashboard**: Test duration, errors, users
+* **Throughput / Response Time** Graphs
+* **Percentiles**: 90%, 95%, 99%
+* **Failures**: With cause and response times
+
+---
+
+## 💡 Optional Automation Script
+
+Create a `run_performance_test.sh`:
+
+```bash
+#!/bin/bash
+
+echo "Running JMeter performance test..."
+mkdir -p ~/jmeter_results/html_report_$(date +%F_%H-%M)
+
+jmeter -n \
+  -t ~/Downloads/Performancss/performance_test_plan.jmx \
+  -l ~/jmeter_results/result_$(date +%F_%H-%M).jtl \
+  -e \
+  -o ~/jmeter_results/html_report_$(date +%F_%H-%M)
+
+echo "Done! Report saved in ~/jmeter_results/"
+```
+
+Make it executable:
+
+```bash
+chmod +x run_performance_test.sh
+```
+
+Run:
+
+```bash
+./run_performance_test.sh
+```
+
+---
+
+## ✅ Summary
+
+| Step | Description                                   |
+| ---- | --------------------------------------------- |
+| 1    | Install Java & JMeter                         |
+| 2    | Create Login + Devices page test plan         |
+| 3    | Add Headers, Cookies, Assertions              |
+| 4    | Save `.jmx` plan                              |
+| 5    | Run via CLI and generate `.jtl` + HTML report |
+| 6    | Open report for analysis                      |
+
+---
+
+Would you like this in a **downloadable PDF or Word format** for sharing with your team?
+

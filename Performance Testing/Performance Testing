@@ -1,0 +1,956 @@
+Great! Since you’ve completed automation testing, moving to **performance testing** is a smart next step. Here’s a **step-by-step guide to get started with performance testing on your Linux system**, using **Apache JMeter**, one of the most popular tools for this purpose.
+
+---
+
+## ✅ Step-by-Step Guide for Performance Testing using Apache JMeter (on Linux)
+
+---
+
+### 🔧 Step 1: Install Java (JDK)
+
+JMeter requires Java to run.
+
+1. Open your terminal and check if Java is installed:
+
+   ```bash
+   java -version
+   ```
+
+2. If not installed, install OpenJDK:
+
+   ```bash
+   sudo apt update
+   sudo apt install openjdk-11-jdk -y
+   ```
+
+3. Confirm installation:
+
+   ```bash
+   java -version
+   ```
+
+---
+
+### 📥 Step 2: Download and Install Apache JMeter
+
+1. Download the latest JMeter binary (you can check the latest version at [https://jmeter.apache.org/download\_jmeter.cgi](https://jmeter.apache.org/download_jmeter.cgi)):
+
+   ```bash
+   wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
+   ```
+
+2. Extract it:
+
+   ```bash
+   tar -xvzf apache-jmeter-5.6.3.tgz
+   ```
+
+3. Move it to a suitable location:
+
+   ```bash
+   sudo mv apache-jmeter-5.6.3 /opt/jmeter
+   ```
+
+---
+
+### 🚀 Step 3: Launch JMeter GUI
+
+Run JMeter using the terminal:
+
+```bash
+/opt/jmeter/bin/jmeter
+```
+
+This will open the JMeter GUI.
+
+---
+
+### 🧪 Step 4: Create Your First Test Plan
+
+1. **Open JMeter GUI**.
+
+2. **Right-click on Test Plan → Add → Threads → Thread Group**
+
+   * Set number of users (threads), ramp-up time, and loop count.
+
+3. **Add HTTP Request Sampler**:
+
+   * Right-click on Thread Group → Add → Sampler → HTTP Request
+   * Set:
+
+     * **Server Name or IP**: `dashboard.sm.test.cwdin.com`
+     * **Protocol**: `https`
+     * **Path**: `/home/entity-management/devices`
+     * **Method**: `GET` or `POST` as required
+
+4. **Add Listener to View Results**:
+
+   * Right-click on Thread Group → Add → Listener → View Results in Table / Summary Report / Graph Results
+
+---
+
+### 🔒 Step 5: Add Authorization (if login is required)
+
+If your website requires login:
+
+* Use **HTTP Cookie Manager** to maintain session.
+* Add a **Login HTTP Request** before your actual test steps (POST request with username/password).
+* Use **HTTP Header Manager** to pass headers (e.g., Authorization tokens or CSRF tokens).
+
+---
+
+### 📊 Step 6: Run the Test
+
+Click the green **Start** button in JMeter. You’ll see results in the listener(s) you added.
+
+---
+
+### 📈 Step 7: Analyze Results
+
+Key metrics to look for:
+
+* **Response Time**: How long requests take
+* **Throughput**: Requests per second
+* **Error %**: How many failed
+* **Latency**: Time to first byte
+
+---
+
+### 📦 Optional: CLI (Headless) Mode for Larger Loads
+
+To run JMeter in terminal without GUI:
+
+```bash
+/opt/jmeter/bin/jmeter -n -t your_test_plan.jmx -l result.csv -e -o report_folder
+```
+
+This will generate an HTML report inside `report_folder`.
+
+---
+
+### 🔁 Step 8: Iterate and Scale
+
+* Start small (5-10 users), then scale up gradually (50, 100, 500, etc.).
+* Test different scenarios: login, search, data load, message send, etc.
+* Identify bottlenecks (slow APIs, memory issues, etc.)
+
+---
+
+## 🛠️ Optional Tools to Integrate
+
+| Tool               | Use Case                                     |
+| ------------------ | -------------------------------------------- |
+| Grafana + InfluxDB | Live monitoring during JMeter test           |
+| BlazeMeter         | Cloud-based JMeter testing                   |
+| Gatling            | Alternative performance testing tool (Scala) |
+| Locust             | Python-based load testing tool               |
+
+---
+
+## ✅ Summary Checklist
+
+* [x] Java installed
+* [x] JMeter installed and launched
+* [x] Test plan created (Thread Group + HTTP Requests)
+* [x] Listeners added for result analysis
+* [x] Login/authentication handled
+* [x] CLI tests and reports generated
+* [x] Results analyzed for bottlenecks
+
+---
+
+If you'd like, I can help you build a `.jmx` test plan specifically for your login + device management flow, or even generate a CLI-ready command for automated testing.
+
+Would you like to proceed with a login + navigation flow test or stress test just the `/devices` endpoint?
+
+
+
+
+Great question! You're thinking like a real performance tester now 👏
+
+Let’s **add a bit of complexity** to your JMeter test plan so that it **actually tests performance under load**, not just sends one request.
+
+We’ll do this step-by-step:
+
+---
+
+## 🎯 What You’ll Learn in This Step
+
+* Simulate **multiple users hitting your website at once**
+* Measure response time, throughput, and failure rate
+* Know if your website is **slow**, **struggling**, or **performing well**
+
+---
+
+## 🛠️ Step-by-Step: Make Your Test Plan More “Performance-Oriented”
+
+---
+
+### ✅ Step 1: Increase the Number of Users
+
+Go to your **Thread Group** (click on it in the left panel) and update:
+
+| Setting                       | Value |
+| ----------------------------- | ----- |
+| **Number of Threads (Users)** | `50`  |
+| **Ramp-Up Period (Seconds)**  | `10`  |
+| **Loop Count**                | `2`   |
+
+🧠 Explanation:
+
+* 50 virtual users will be created.
+* They’ll start over 10 seconds (not all at once).
+* Each will hit the endpoint **2 times**, for a total of 100 requests.
+
+---
+
+### ✅ Step 2: Add Timers (Simulate real user delay)
+
+Right-click on `Thread Group` → `Add` → `Timer` → `Constant Timer`
+
+Set **Thread Delay (in milliseconds)**: `500` (half a second)
+
+This means: wait 500ms between requests (simulating real human browsing behavior).
+
+---
+
+### ✅ Step 3: Add a Summary Report to See Performance
+
+You probably already added this, but if not:
+
+Right-click on `Thread Group` → `Add` → `Listener` → `Summary Report`
+
+This shows:
+
+* **Samples** = Number of requests sent
+* **Average** = Avg response time in milliseconds
+* **Min/Max** = Fastest/slowest request
+* **Error %** = Failure rate
+* **Throughput** = Requests per second
+
+---
+
+### ✅ Step 4: Run the Test Again
+
+Click the **Green Start Button** (▶️) again.
+
+* Go to **Summary Report** or **View Results in Table**
+* You’ll now see **multiple requests**, and you’ll be able to measure:
+
+  * If response times increase
+  * If the server starts returning errors (e.g., 500)
+  * If throughput stays stable
+
+---
+
+### 📊 How Do You Know if It’s Testing Performance?
+
+You’ll **know it’s a real performance test** when:
+
+✅ You see:
+
+* More than 1 request
+* Response times being logged (especially under higher users)
+* Server errors (if site can’t handle load)
+
+✅ You analyze:
+
+* If response times rise when threads increase
+* If error % goes above 0 (e.g., server fails to respond)
+* If throughput drops under higher user loads
+
+---
+
+### 🔥 Optional: Try with 100 Users
+
+Change:
+
+* Threads = 100
+* Ramp-Up = 20 seconds
+
+Run it again and **see how your server behaves** under pressure.
+
+---
+
+Would you like me to help next with:
+
+* **Adding login (authentication)** before testing protected URLs?
+* **Exporting an HTML performance report**?
+* **Running this from terminal in headless mode for large tests?**
+
+Let me know and I’ll walk you through!
+Awesome! 🚀 You're now running a **real performance test**, and your results clearly show:
+
+* ✅ 100 requests completed
+* ✅ All had **"Success"**
+* ✅ You're measuring **latency, response time**, and **throughput**
+
+Let me explain **how to read and analyze** what you just did.
+
+---
+
+## 🧠 How to Understand These JMeter Results
+
+Each row shows **one HTTP request** sent by a virtual user.
+
+### 🔍 Important Columns:
+
+| Column            | Meaning                                                  |
+| ----------------- | -------------------------------------------------------- |
+| **Thread Name**   | Which virtual user (`Thread Group 1-X`) sent the request |
+| **Sample Time**   | Time taken to complete the request                       |
+| **Response Code** | `Success` means HTTP 200 (OK)                            |
+| **Latency**       | Time to receive the first byte                           |
+| **Connect**       | Time taken to establish TCP connection                   |
+| **Response Time** | Total time to get a response from the server             |
+
+---
+
+## 📈 Is This Really Testing Performance?
+
+YES. You just tested:
+
+* How your server performs under **simulated 50 users × 2 loops = 100 requests**
+* Response time ranges from:
+
+  * As high as **5,000ms** (5 seconds)
+  * To as low as **6–30ms**
+
+This shows:
+
+* Your server handles traffic but with **variable response times**
+* Some responses were **slow** (indicates potential bottlenecks)
+
+---
+
+## ✅ What You Can Do Next (Slightly More Advanced)
+
+Here are **next steps** to go deeper — pick whichever you want, and I’ll guide you:
+
+### 1. 🧾 Generate HTML Report with Graphs
+
+* So you can share the results with your team visually.
+
+### 2. 🔐 Add Login Step Before Accessing `/devices`
+
+* Simulate real user login with username/password (POST request)
+* Carry session cookies and test authenticated pages
+
+### 3. 📊 Add Graphs: View Real-Time Graph Results
+
+* Add: Listener → Graph Results / Response Time Graph
+
+### 4. 🧪 Increase Load to 200–500 Users
+
+* Stress test the server and find the **breaking point**
+
+### 5. ⚙️ Run in CLI mode (terminal) and export results
+
+* Great for scheduled or headless testing
+
+---
+
+## 📌 Final Tip: Know When Your Website Is Struggling
+
+**Signs of performance issues:**
+
+* Response times consistently > 3000ms
+* High error percentage
+* Throughput dropping when users increase
+
+---
+
+Let me know which one you want to try next — for example:
+
+> "I want to add login step before accessing the devices page."
+
+Or:
+
+> "Help me export an HTML report."
+
+Perfect, thank you!
+
+Your login URL is:
+🔐 `https://dashboard.sm.test.cwdin.com/login`
+But under the hood (in browser DevTools), it's likely making a **POST request** to something like `/auth/login`.
+
+Let’s confirm and implement that now.
+
+---
+
+## ✅ Step 1: Identify Login Request Type
+
+Please do the following in your browser:
+
+### 🕵️‍♂️ Use DevTools to Inspect Login Call
+
+1. Open [https://dashboard.sm.test.cwdin.com/login](https://dashboard.sm.test.cwdin.com/login)
+2. Open **Developer Tools** (Right click → Inspect → Go to `Network` tab)
+3. Login with test credentials
+4. Look for the first **XHR / Fetch** request — you’ll likely see `/auth/login` or similar.
+5. Click it and check:
+
+   * **Request URL**
+   * **Request Method** (POST or GET)
+   * **Request Payload / Form Data** (e.g., `username=email@example.com`, `password=xyz123`)
+   * **Request Headers** (Especially `Content-Type`, `Authorization`, `X-CSRF-TOKEN`, etc.)
+
+Please **share** the following:
+
+* ✅ Final login request **URL**
+* ✅ Whether it sends **form data** or **raw JSON**
+* ✅ Required headers like CSRF tokens or bearer tokens, if any
+
+---
+
+Once you confirm those details, I will:
+
+* Set up the login request **exactly**
+* Configure the HTTP Header and Body (JSON or Form)
+* Ensure session/cookie is maintained to access `/home/entity-management/devices`
+
+⚠️ *Without these details, JMeter might try to log in incorrectly (wrong headers/body).*
+Once I have them, we’ll move to Step 2: **Add Graphs** and Step 3: **HTML Report**.
+
+Would you like help checking this in DevTools?
+
+I’ll guide you line-by-line.
+Perfect — this is exactly what we needed! 🔍
+
+You found the **correct login endpoint**:
+
+### ✅ Login Endpoint:
+
+```
+POST https://web.sm.test.cwdin.com/api/v1/user/auth/login
+```
+
+Now, let’s fix your JMeter login request — because right now you're getting a `314 Warning`, which means **JMeter is not sending the request in the correct format** (likely missing headers or wrong body format).
+
+---
+
+## ✅ Step-by-Step: Setup Correct Login in JMeter
+
+---
+
+### 🔧 1. Update Login HTTP Request
+
+1. In your Test Plan, click on `Login Request`.
+
+2. Change these fields:
+
+| Field           | Value                     |
+| --------------- | ------------------------- |
+| **Method**      | `POST`                    |
+| **Protocol**    | `https`                   |
+| **Server Name** | `web.sm.test.cwdin.com`   |
+| **Path**        | `/api/v1/user/auth/login` |
+
+---
+
+### 🧾 2. Add Body Data (Raw JSON)
+
+Click on **Login Request → Body Data** tab:
+
+Paste the following (replace with real credentials):
+
+```json
+{
+  "username": "your_username_here",
+  "password": "your_password_here"
+}
+```
+
+---
+
+### 🧠 3. Add Header Manager
+
+You must tell the server that you're sending JSON.
+
+1. Right-click on `Login Request` → `Add` → `Config Element` → `HTTP Header Manager`
+
+2. Click **Add** → Set:
+
+| Name         | Value              |
+| ------------ | ------------------ |
+| Content-Type | `application/json` |
+| Accept       | `application/json` |
+
+---
+
+### 🍪 4. Add HTTP Cookie Manager
+
+To manage the session:
+
+* Right-click `Test Plan` → `Add` → `Config Element` → `HTTP Cookie Manager`
+
+✅ Make sure this is added **only once** to your Test Plan.
+
+---
+
+### ✅ 5. Test the Login
+
+Now run the test:
+
+* If login works, you’ll see `200 OK` or `201 Created`
+* If you still see `314` or other error, we’ll debug by:
+
+  * Adding `View Results Tree`
+  * Looking at **Request Data** and **Response Data** to see the error message
+
+---
+
+### 🧪 6. Make Sure Device Page Runs After Login
+
+Move the **"Open Devices Page" request** **after** login.
+(Or just confirm that it’s already after it in the tree view.)
+
+Now, JMeter will:
+
+1. Log in
+2. Use that session to load `/devices`
+
+---
+
+## ✅ Next Steps
+
+If you're ready, we can now proceed to:
+
+### 🔄 Step 2: Add Graphs and Response Time Visuals
+
+→ Great for spotting performance slowdowns in real-time
+
+### 📊 Step 3: Generate Beautiful HTML Report
+
+→ Gives your team a clean dashboard of performance
+
+### 🔥 Step 4: Increase to 100–500 Users (Stress Test)
+
+### ⚙️ Step 5: Run from Terminal (Headless) with CSV/HTML Output
+
+---
+
+Would you like to move to **graphs** or first confirm that login is working with 200/201?
+If login is still showing 314, we can debug it right away.
+
+Thanks for sharing the error log — this is **very clear**:
+
+---
+
+## ❌ Problem:
+
+```
+Cannot write to '/home/cwd/jmeter_results/html_report' as folder does not exist and parent folder is not writable
+```
+
+This means:
+
+* Either the `/home/cwd/jmeter_results` folder **doesn’t exist**
+* Or your user doesn't have **write permission** there
+
+---
+
+## ✅ Solution: Create Folder with Correct Permissions
+
+### Step 1: Manually create the results folder
+
+In your terminal, run:
+
+```bash
+mkdir -p /home/cwd/jmeter_results/html_report
+```
+
+Then set permissions to allow writing:
+
+```bash
+chmod -R 755 /home/cwd/jmeter_results
+```
+
+---
+
+### Step 2: Re-run JMeter from CLI
+
+Now run the same command again:
+
+```bash
+/opt/jmeter/bin/jmeter \
+  -n \
+  -t /home/cwd/Downloads/Performancss/performance_test_plan.jmx \
+  -l /home/cwd/jmeter_results/result.jtl \
+  -e \
+  -o /home/cwd/jmeter_results/html_report
+```
+
+---
+
+### Step 3: Open HTML Report
+
+Once JMeter finishes running, open it:
+
+```bash
+xdg-open /home/cwd/jmeter_results/html_report/index.html
+```
+
+---
+
+## 🎉 You’re Set!
+
+Once this works, you'll get a full performance dashboard in browser.
+
+Ready for next step?
+We can now do:
+
+* 🔥 **Stress test** (100–500 users)
+* 🧪 Add **Assertions** (fail if response time > X or status ≠ 200)
+* ⚙️ Create a reusable **bash script** for CI/CD automation
+
+Let me know which you'd like!
+Perfect! 👌 You saved your JMeter test plan at:
+
+```
+/home/cwd/Downloads/Performancss/performance_test_plan.jmx
+```
+
+Let’s now generate the full HTML report using that file.
+
+---
+
+## ✅ Step-by-Step to Generate HTML Report (with your file path)
+
+### 🔧 Step 1: Open Your Terminal and Run:
+
+```bash
+mkdir -p ~/jmeter_results
+```
+
+This creates a folder to store results and the HTML report.
+
+---
+
+### 🖥️ Step 2: Run JMeter in CLI to Generate Report
+
+Now run this command:
+
+```bash
+/opt/jmeter/bin/jmeter \
+  -n \
+  -t /home/cwd/Downloads/Performancss/performance_test_plan.jmx \
+  -l ~/jmeter_results/result.jtl \
+  -e \
+  -o ~/jmeter_results/html_report
+```
+
+> ⚠️ Make sure `/opt/jmeter/bin/jmeter` is correct.
+> If not, try `which jmeter` or just type `jmeter` if it's in your PATH.
+
+---
+
+### ✅ Step 3: Open the HTML Report
+
+Once the command completes, run this to view the report in your browser:
+
+```bash
+xdg-open ~/jmeter_results/html_report/index.html
+```
+
+Or manually open the file:
+
+```
+~/jmeter_results/html_report/index.html
+```
+
+---
+
+### 📊 What You’ll See:
+
+* ✅ Dashboard with charts & tables
+* 📈 Throughput, latency, error %, percentiles
+* 💡 Easy to analyze performance trends
+
+---
+
+## 🎯 Next Step?
+
+Would you like to now:
+
+1. 🔥 Increase to **500 users** and simulate a stress test?
+2. 🛠️ Schedule/automate tests via a **Bash script**?
+3. 🧪 Add assertions (like response must be < 5s or status = 200)?
+4. 🧼 Clean up old results and automate HTML reports generation?
+
+Let me know what you'd like to do next — you're doing amazing so far!
+Great! 🧾 Let’s generate a **professional HTML report** from your JMeter test results.
+
+---
+
+## ✅ Step 3: Generate an HTML Report in JMeter
+
+We’ll do this using the **Command Line Interface (CLI)** — even if you use GUI to create the test plan, **report generation must be done in CLI** for HTML.
+
+---
+
+### 🔧 Step 1: Save Your `.jmx` Test Plan
+
+In the GUI:
+
+* File → Save Test Plan As → `performance_test_plan.jmx`
+* Example path: `/home/yourusername/Desktop/performance_test_plan.jmx`
+
+---
+
+### 📁 Step 2: Create a Folder for Test Results
+
+Open terminal and run:
+
+```bash
+mkdir -p ~/jmeter_results
+```
+
+This folder will hold:
+
+* `.jtl` result file (raw data)
+* Final HTML report
+
+---
+
+### 🖥️ Step 3: Run JMeter Test from CLI
+
+In your terminal, run this (update paths as needed):
+
+```bash
+/opt/jmeter/bin/jmeter \
+  -n \
+  -t /home/yourusername/Desktop/performance_test_plan.jmx \
+  -l ~/jmeter_results/result.jtl \
+  -e \
+  -o ~/jmeter_results/html_report
+```
+
+### 📌 What Each Flag Means:
+
+| Flag | Meaning                       |
+| ---- | ----------------------------- |
+| `-n` | Non-GUI (headless mode)       |
+| `-t` | Path to your `.jmx` test plan |
+| `-l` | Path to `.jtl` results file   |
+| `-e` | Generate report               |
+| `-o` | Output folder for HTML report |
+
+---
+
+### ✅ Step 4: View the HTML Report
+
+Once it finishes, open your report in browser:
+
+```bash
+xdg-open ~/jmeter_results/html_report/index.html
+```
+
+You’ll see:
+
+* 📈 Response time graph
+* 🕓 Time vs load
+* 🔥 Errors (if any)
+* 💡 Insights like 95th percentile response time, throughput, etc.
+
+---
+
+## ✅ Want to Go Next?
+
+We can now:
+
+### 🔥 Step 4: Simulate 100–500 Users (Load Test)
+
+* Increase thread count & ramp-up
+* Monitor server performance under pressure
+
+### ⚙️ Step 5: Automate CLI-based Test in a Script (for daily runs)
+
+Let me know which step you’d like next, or if you want to review or share your current HTML report.
+Awesome! Since your login and authenticated device page are now set up ✅, let’s move to the **next step**:
+
+---
+
+## 📊 Step 2: Add Real-Time Graphs and Visualize Performance
+
+These graphs will show you:
+
+* 📈 Response time trends
+* 🔁 Request throughput
+* ❌ Failures if any
+* ⚖️ Server performance under load
+
+---
+
+### ✅ Add Graph Listeners in JMeter GUI
+
+> 📌 **Add these to your Thread Group**, NOT under individual requests.
+
+#### 1. **Graph Results (Simple)**
+
+* Right-click on `Thread Group` → `Add` → `Listener` → `Graph Results`
+
+#### 2. **Response Time Graph**
+
+* Right-click on `Thread Group` → `Add` → `Listener` → `Response Time Graph`
+
+#### 3. **Aggregate Report**
+
+* Right-click on `Thread Group` → `Add` → `Listener` → `Aggregate Report`
+* This will show:
+
+  * Min, Max, Avg response time
+  * Standard deviation
+  * Throughput (req/sec)
+
+#### 4. (Optional) **View Results Tree**
+
+* Use only during testing (it slows things down under large loads)
+* Right-click on `Thread Group` → `Add` → `Listener` → `View Results Tree`
+
+---
+
+### ▶️ Run the Test
+
+1. Click the **green "Start" button**.
+2. While test runs:
+
+   * Watch **Graph Results** and **Response Time Graph**
+   * You’ll see response spikes, delays, or failures if they occur
+
+---
+
+### 🧠 How to Interpret the Graphs:
+
+| Graph                      | What to Look For                                          |
+| -------------------------- | --------------------------------------------------------- |
+| 📈 **Graph Results**       | Line color thickness = how many samples                   |
+| 📉 **Response Time Graph** | Spikes = delays or server bottlenecks                     |
+| 📋 **Aggregate Report**    | Avg response > 3000 ms = possible slowness                |
+| 🚨 **Errors**              | Look at %Error in Aggregate Report or red lines in Graphs |
+
+---
+
+## ✅ Summary So Far:
+
+You’ve now completed:
+
+✔️ Simulated login + authenticated access
+✔️ Added graphs for real-time feedback
+✔️ Able to monitor response time + performance
+
+---
+
+### ✅ Next Step: Want to Generate a Clean HTML Report?
+
+This report is **beautiful, shareable, and includes all graphs + tables**.
+
+👉 Shall we proceed to **Step 3: HTML Report Generation** using the CLI?
+Awesome! Since you're ready — let's now **stress test your site with higher load** to evaluate how it behaves under pressure.
+
+---
+
+## 🔥 Step 4: Simulate a Stress Test (100–500 Users)
+
+This helps you find:
+
+* Server limits 🧱
+* Bottlenecks 🐢
+* Response time spikes 📈
+* Failures at scale ❌
+
+---
+
+### ✅ Step-by-Step: Update Thread Group Settings
+
+1. **Open your test plan** in JMeter GUI:
+   `performance_test_plan.jmx`
+
+2. Click on **Thread Group** (first element in your test plan)
+
+3. Change these values:
+
+| Field                         | Value | Description                           |
+| ----------------------------- | ----- | ------------------------------------- |
+| **Number of Threads (Users)** | `500` | Simulates 500 users                   |
+| **Ramp-Up Period (seconds)**  | `60`  | Gradually start all users over 60 sec |
+| **Loop Count**                | `1`   | Each user runs test once              |
+
+> ⚠️ **Start lower (e.g., 100)** and go up in steps — don't go straight to 1000 unless your server can handle it.
+
+---
+
+### 🧪 Optional: Add Assertions (Recommended)
+
+To **fail** test cases automatically if something goes wrong:
+
+#### Add Response Assertion:
+
+1. Right-click on **"Open Devices Page"** → `Add` → `Assertions` → `Response Assertion`
+2. In **Response Field to Test**: Choose `Text Response`
+3. In **Pattern Matching Rules**: Choose `Contains`
+4. Add a **pattern** like:
+
+   ```
+   "Devices"
+   ```
+
+   *(Or some text that only appears on successful pages)*
+
+You can also assert:
+
+* HTTP Response Code = 200
+* Response Time < 5000 ms
+
+---
+
+### 💾 Save the Plan
+
+Save after these changes:
+`File → Save`
+
+---
+
+### ▶️ Step 5: Run from CLI Again
+
+Run with the updated load test settings:
+
+```bash
+/opt/jmeter/bin/jmeter \
+  -n \
+  -t /home/cwd/Downloads/Performancss/performance_test_plan.jmx \
+  -l /home/cwd/jmeter_results/result_high_load.jtl \
+  -e \
+  -o /home/cwd/jmeter_results/html_report_high_load
+```
+
+Then open the report:
+
+```bash
+xdg-open /home/cwd/jmeter_results/html_report_high_load/index.html
+```
+
+---
+
+## ✅ What to Look For in the HTML Report:
+
+| Metric             | Good Value  | Signs of Trouble        |
+| ------------------ | ----------- | ----------------------- |
+| Avg. Response Time | < 1000 ms   | > 3000 ms               |
+| Error %            | 0%          | > 1%                    |
+| Throughput         | High = Good | Drops = server overload |
+| 95% Line           | < 1500 ms   | Higher = latency        |
+
+---
+
+### ✅ Next Step?
+
+You're now stress testing like a pro! We can now:
+
+1. 🛠️ Automate everything using a **Bash script**
+2. 📥 Export test results to Excel/CSV
+3. 🌐 Run tests in **CI/CD pipelines** (e.g. Jenkins, GitHub Actions)
+4. 🧼 Clean + rotate old reports
+
+Let me know which one you want next — or if you want to do another test case (e.g., add user, send message) for performance!
+
